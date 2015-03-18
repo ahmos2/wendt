@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from pycanopen import *
-import datetime
+import datetime,urllib2
 
 input = CANopen('vcan0')
 output = CANopen('can0')
@@ -35,11 +35,17 @@ def calcTsArray():
 
 
 def ArrayToCuint8(array):
-    retVal = c_uint8 * 8()
+    retVal = (c_uint8 * 8)()
     for i in range(6):
         retVal[i] = array[i]
     return retVal
 
+def sendAlive(company,ship,controller,instance,day,ms):
+    url='http://128.39.165.228:8080/Alive?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&day='+str(day)+'&ms='+str(ms)
+    print '<',url
+    resp=urllib2.urlopen(url)
+    print '> ',resp
+    resp.close()
 
 while True:
     try:
@@ -49,12 +55,12 @@ while True:
     if frame:
         if int(frame.id & 127) == 0 and frame.function_code == 2:
             dayL = list(frame.data.data)
-            dayL.reverse()
             daysSince84 = parse16(dayL, 4)
+            dayL.reverse()
             msSinceMidnight = parse32(frame.data.data, 0)
+            sendAlive(0,0,0,0,daysSince84,msSinceMidnight)
             payload = CANopenPayload(data=ArrayToCuint8(calcTsArray()))
-            frame2send = CANopenFrame(function_code=2, id=99,
-                    data_len=6, data=payload, type=1)
+            frame2send = CANopenFrame(function_code=2, id=99,data_len=6, data=payload, type=1)
             print '<', frame2send
             output.send_frame(frame2send)
         if int(frame.id & 127) == 99:
