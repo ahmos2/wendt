@@ -22,8 +22,8 @@ def calcTsArray():
     timeSinceMN=pack32(int((now-midnight).total_seconds()*1000))
     dsL=pack16((datetime.datetime.now()-datetime.datetime(1984,1,1)).days);
     dsL.reverse()
-    daysSince80s=dsL
-    return timeSinceMN+daysSince80s
+    daysSince84=dsL
+    return timeSinceMN+daysSince84
 
 def ArrayToCuint8(array):
     retVal=(c_uint8 * 8)()
@@ -37,15 +37,13 @@ while True:
     except Exception as inst:
         print("Exception in read_frame:",inst.args)
     if frame:
-#        print ">",frame
         if int(frame.id&127)==0 and frame.function_code==2:
             dayL=list(frame.data.data)
             dayL.reverse()
-#            print parse16(dayL,4)," days since 1984",parse32(frame.data.data,0),"ms since midnight"
-#            print calcTsArray()
+            daysSince84=parse16(dayL,4)
+            msSinceMidnight=parse32(frame.data.data,0)
             payload=CANopenPayload(data=ArrayToCuint8(calcTsArray()))
             frame2send=CANopenFrame(function_code=2,id=99,data_len=6,data=payload,type=1)
-#            frame2send.data.data=ArrayToCuint8(calcTsArray())
             print "<",frame2send
             output.send_frame(frame2send)
         if int(frame.id&127)==99:
