@@ -72,7 +72,7 @@ while True:
             frame2send = CANopenFrame(function_code=2, id=99,data_len=6, data=payload, type=1)
             print '<', frame2send
             output.send_frame(frame2send)
-        if int(frame.id & 127) == 99:
+        if int(frame.id & 127) == 99 or (int(frame.id&127==0) and frame.function_code==0):
             print 'ALERT', frame, frame.id & 127, frame.function_code
             sendError(0,0,0,0,'MJOW')
 			
