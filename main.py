@@ -4,7 +4,7 @@ from pycanopen import *
 import datetime,urllib2
 
 input = CANopen('vcan0')
-output = CANopen('vcan1')
+output = CANopen('can0')
 
 
 def parse16(array, offset):
@@ -58,7 +58,6 @@ def sendError(company,ship,controller,instance,error):
 while True:
     try:
         frame = input.read_frame()
-        print frame
     except Exception, inst:
         print ('Exception in read_frame:', inst.args)
     if frame:
@@ -72,7 +71,7 @@ while True:
             frame2send = CANopenFrame(function_code=2, id=99,data_len=6, data=payload, type=1)
             print '<', frame2send
             output.send_frame(frame2send)
-        if int(frame.id & 127) == 99 or (int(frame.id&127==0) and frame.function_code==0):
+        if int(frame.id & 127) == 99 or (int(frame.id&127==0) and frame.function_code==0 and frame.data.data[1]==99):
             print 'ALERT', frame, frame.id & 127, frame.function_code
             sendError(0,0,0,0,'MJOW')
 			
