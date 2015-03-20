@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from pycanopen import *
-import datetime,urllib2
+import datetime,urllib2,sys
 
-input = CANopen('vcan0')
-output = CANopen('can0')
+input = CANopen(sys.argv[1])
+output = CANopen(sys.argv[2])
 
+instance=int(sys.argv[1][sys.argv[1].find('can')+len('can')])
+canid=99+instance
 
 def parse16(array, offset):
     return (array[offset + 1] << 8) + array[offset]
@@ -40,20 +42,19 @@ def ArrayToCuint8(array):
         retVal[i] = array[i]
     return retVal
 
-def sendAlive(company,ship,controller,instance,day,ms):
-    url='http://128.39.165.228:8080/Alive?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&day='+str(day)+'&ms='+str(ms)
+def httpGet(url):
     print '<',url
     resp=urllib2.urlopen(url)
     print '> ',resp
     resp.close()
+
+def sendAlive(company,ship,controller,instance,day,ms):
+    url='http://128.39.165.228:8080/Alive?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&day='+str(day)+'&ms='+str(ms)
+    httpGet(url)
 
 def sendError(company,ship,controller,instance,error):
     url='http://128.39.165.228:8080/Error?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&error='+error
-    print '<',url
-    resp=urllib2.urlopen(url)
-    print '> ',resp
-    resp.close()
-
+    httpGet(url)
 
 while True:
     try:
@@ -66,12 +67,12 @@ while True:
             daysSince84 = parse16(dayL, 4)
             dayL.reverse()
             msSinceMidnight = parse32(frame.data.data, 0)
-            sendAlive(0,0,0,0,daysSince84,msSinceMidnight)
+            sendAlive(0,0,0,instance,daysSince84,msSinceMidnight)
             payload = CANopenPayload(data=ArrayToCuint8(calcTsArray()))
-            frame2send = CANopenFrame(function_code=2, id=99,data_len=6, data=payload, type=1)
+            frame2send = CANopenFrame(function_code=2, id=canid,data_len=6, data=payload, type=1)
             print '<', frame2send
             output.send_frame(frame2send)
-        if int(frame.id & 127) == 99 or (int(frame.id&127==0) and frame.function_code==0 and frame.data.data[1]==99):
+        if int(frame.id & 127) == canid or (int(frame.id&127==0) and frame.function_code==0 and frame.data.data[1]==99):
             print 'ALERT', frame, frame.id & 127, frame.function_code
-            sendError(0,0,0,0,'MJOW')
+            sendError(0,0,0,instance,'MJOW')
 			
