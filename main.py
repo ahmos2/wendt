@@ -43,10 +43,13 @@ def ArrayToCuint8(array):
     return retVal
 
 def httpGet(url):
-    print '<',url
-    resp=urllib2.urlopen(url)
-    print '> ',resp
-    resp.close()
+    try:
+        print '<',url
+        resp=urllib2.urlopen(url)
+        print '> ',resp
+        resp.close()
+    except urllib2.URLError as error:
+        print 'URLError',error,'requesting',url
 
 def sendAlive(company,ship,controller,instance,day,ms):
     url='http://128.39.165.228:8080/Alive?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&day='+str(day)+'&ms='+str(ms)
