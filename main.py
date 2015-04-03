@@ -52,7 +52,7 @@ def sendError(company,ship,controller,instance,error):
 
 
 parser = ArgumentParser()
-parser.add_argument("--remotescheme", default="http")
+parser.add_argument("--remotescheme", default="https")
 parser.add_argument("--remotehost", default="128.39.165.228")
 parser.add_argument("--remoteport", default="8080")
 
