@@ -21,8 +21,7 @@ def calcTsArray():
     now = datetime.datetime.now()
     midnight = datetime.datetime(now.year, now.month, now.day)
     timeSinceMN = pack32(int((now - midnight).total_seconds() * 1000))
-    dsL = pack16((datetime.datetime.now() - datetime.datetime(1984, 1,
-                 1)).days)
+    dsL = pack16((datetime.datetime.now() - datetime.datetime(1984, 1, 1)).days)
     dsL.reverse()
     daysSince84 = dsL
     return timeSinceMN + daysSince84
@@ -32,6 +31,13 @@ def ArrayToCuint8(array):
     for i in range(6):
         retVal[i] = array[i]
     return retVal
+
+def handleTimeStampMsg(pkg):
+    dayL = list(frame.data.data)
+    daysSince84 = parse16(dayL, 4)
+    dayL.reverse()
+    msSinceMidnight = parse32(frame.data.data, 0)
+    sendAlive(args.company,args.ship,args.controller,args.instance,daysSince84,msSinceMidnight)
 
 def httpGet(url):
     try:
@@ -78,15 +84,7 @@ while True:
         print ('Exception in read_frame:', inst.args)
     if frame:
         if int(frame.id & 127) == 0 and frame.function_code == 2:
-            dayL = list(frame.data.data)
-            daysSince84 = parse16(dayL, 4)
-            dayL.reverse()
-            msSinceMidnight = parse32(frame.data.data, 0)
-            sendAlive(args.company,args.ship,args.controller,args.instance,daysSince84,msSinceMidnight)
-            payload = CANopenPayload(data=ArrayToCuint8(calcTsArray()))
-            frame2send = CANopenFrame(function_code=2, id=canid,data_len=6, data=payload, type=1)
-            print '<', frame2send
-            outputBus.send_frame(frame2send)
+            handleTimeStampMsg(frame)
         if int(frame.id & 127) == canid or (int(frame.id&127==0) and frame.function_code==0 and frame.data.data[1]==config.nodeid):
             print 'ALERT', frame, frame.id & 127, frame.function_code
             sendError(args.company,args.ship,args.controller,args.instance,'MJOW')
