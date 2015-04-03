@@ -33,11 +33,15 @@ def ArrayToCuint8(array):
     return retVal
 
 def handleTimeStampMsg(pkg):
-    dayL = list(frame.data.data)
+    dayL = list(pkg.data.data)
     daysSince84 = parse16(dayL, 4)
     dayL.reverse()
-    msSinceMidnight = parse32(frame.data.data, 0)
-    sendAlive(args.company,args.ship,args.controller,args.instance,daysSince84,msSinceMidnight)
+    msSinceMidnight = parse32(pkg.data.data, 0)
+
+    if pkg.data.length<>6:
+        sendError(args.company,args.ship,args.controller,args.instance,"Timestamp data length error")
+    else:
+        sendAlive(args.company,args.ship,args.controller,args.instance,daysSince84,msSinceMidnight)
 
 def httpGet(url):
     try:
