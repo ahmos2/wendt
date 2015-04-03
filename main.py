@@ -34,39 +34,39 @@ def ArrayToCuint8(array):
 
 def handleTimeStampMsg(pkg):
     if pkg.data.length<>6:
-        sendError(args.company,args.ship,args.controller,args.instance,"Timestamp data length error")
+        sendError(config.company,config.ship,config.controller,config.instance,"Timestamp data length error")
         return
     dayL = list(pkg.data.data)
     daysSince84 = parse16(dayL, 4)
 
     global prevDS84
     if daysSince84 < prevDS84:
-        sendError(args.company,args.ship,args.controller,args.instance,"Timestamp days reduced #nodelorean")
+        sendError(config.company,config.ship,config.controller,config.instance,"Timestamp days reduced #nodelorean")
         return
     if daysSince84 > prevDS84 + 1:
-        sendError(args.company,args.ship,args.controller,args.instance,"Timestamp day skipped #nodelorean")
+        sendError(config.company,config.ship,config.controller,config.instance,"Timestamp day skipped #nodelorean")
         return
     dayL.reverse()
     msSinceMidnight = parse32(pkg.data.data, 0)
 
     global prevMsm
     if msSinceMidnight < prevMsm and daysSince84 == prevDS84:
-        sendError(args.company,args.ship,args.controller,args.instance,"Timestamp millis reduced without day-change #nodelorean")
+        sendError(config.company,config.ship,config.controller,config.instance,"Timestamp millis reduced without day-change #nodelorean")
         return
         
     prevDS84=daysSince84
     prevMsm=msSinceMidnight
     
 
-    sendAlive(args.company,args.ship,args.controller,args.instance,daysSince84,msSinceMidnight)
+    sendAlive(config.company,config.ship,config.controller,config.instance,daysSince84,msSinceMidnight)
 
 def httpGet(url):
     try:
         print '<',url
-        resp=urllib2.urlopen(url)
+        resp=urlopen(url)
         print '> ',resp
         resp.close()
-    except urllib2.URLError as error:
+    except URLError as error:
         print 'URLError',error,'requesting',url
 
 def sendAlive(company,ship,controller,instance,day,ms):
@@ -95,9 +95,13 @@ parser.add_argument("--nodeid", type=int, default=99)
 
 config=parser.parse_args()
 
+print "Config",config
+
 inputBus=CANopen(config.input)
 outputBus=CANopen(config.output)
+print "inputBus",inputBus,"outputBus",outputBus
 
+sendAlive(config.company,config.ship,config.controller,config.instance,0,0) # Bootup message
 while True:
     try:
         frame = inputBus.read_frame()
@@ -108,5 +112,5 @@ while True:
             handleTimeStampMsg(frame)
         if int(frame.id & 127) == canid or (int(frame.id&127==0) and frame.function_code==0 and frame.data.data[1]==config.nodeid):
             print 'ALERT', frame, frame.id & 127, frame.function_code
-            sendError(args.company,args.ship,args.controller,args.instance,'MJOW')
+            sendError(config.company,config.ship,config.controller,config.instance,'MJOW')
 			
