@@ -85,7 +85,7 @@ while True:
             frame2send = CANopenFrame(function_code=2, id=canid,data_len=6, data=payload, type=1)
             print '<', frame2send
             outputBus.send_frame(frame2send)
-        if int(frame.id & 127) == canid or (int(frame.id&127==0) and frame.function_code==0 and frame.data.data[1]==99):
+        if int(frame.id & 127) == canid or (int(frame.id&127==0) and frame.function_code==0 and frame.data.data[1]==config.nodeid):
             print 'ALERT', frame, frame.id & 127, frame.function_code
             sendError(args.company,args.ship,args.controller,args.instance,'MJOW')
 			
