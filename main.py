@@ -4,6 +4,7 @@ from pycanopen import *
 from datetime import *
 from urllib2 import *
 from argparse import *
+import urllib
 
 def parse16(array, offset):
     return (array[offset + 1] << 8) + array[offset]
@@ -53,7 +54,9 @@ def handleTimeStampMsg(pkg):
     if msSinceMidnight < prevMsm and daysSince84 == prevDS84:
         sendError(config.company,config.ship,config.controller,config.instance,"Timestamp millis reduced without day-change #nodelorean")
         return
-        
+    if msSinceMidnight == prevMsm and daysSince84 == prevDS84:
+        sendError(config.company,config.ship,config.controller,config.instance,"Timestamp duplicated frame")
+        return        
     prevDS84=daysSince84
     prevMsm=msSinceMidnight
     
@@ -82,7 +85,7 @@ def sendAlive(company,ship,controller,instance,day,ms):
 def sendError(company,ship,controller,instance,error):
     global errorReportFailed
     errorReportFailed=True
-    url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Error?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&error='+error
+    url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Error?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&error='+urllib.quote_plus(error)
     errorReportFailed=not httpGet(url)
 
 parser = ArgumentParser()
