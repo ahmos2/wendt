@@ -38,9 +38,25 @@ def handleTimeStampMsg(pkg):
         return
     dayL = list(pkg.data.data)
     daysSince84 = parse16(dayL, 4)
-    print daysSince84
+
+    global prevDS84
+    if daysSince84 < prevDS84:
+        sendError(args.company,args.ship,args.controller,args.instance,"Timestamp days reduced #nodelorean")
+        return
+    if daysSince84 > prevDS84 + 1:
+        sendError(args.company,args.ship,args.controller,args.instance,"Timestamp day skipped #nodelorean")
+        return
     dayL.reverse()
     msSinceMidnight = parse32(pkg.data.data, 0)
+
+    global prevMsm
+    if msSinceMidnight < prevMsm and daysSince84 == prevDS84:
+        sendError(args.company,args.ship,args.controller,args.instance,"Timestamp millis reduced without day-change #nodelorean")
+        return
+        
+    prevDS84=daysSince84
+    prevMsm=msSinceMidnight
+    
 
     sendAlive(args.company,args.ship,args.controller,args.instance,daysSince84,msSinceMidnight)
 
