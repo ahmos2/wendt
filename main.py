@@ -66,17 +66,24 @@ def httpGet(url):
         resp=urlopen(url)
         print '> ',resp
         resp.close()
+        return True
     except URLError as error:
         print 'URLError',error,'requesting',url
+        return False
 
 def sendAlive(company,ship,controller,instance,day,ms):
-    url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Alive?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&day='+str(day)+'&ms='+str(ms)
-    httpGet(url)
+    if not errorReportFailed:
+        url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Alive?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&day='+str(day)+'&ms='+str(ms)
+        if not httpGet(url):
+            sendError(company,ship,controller,instance,"One or more alive-reports failed")
+    else:
+        sendError(company,ship,controller,instance,"One or more error-reports failed")
 
 def sendError(company,ship,controller,instance,error):
+    global errorReportFailed
+    errorReportFailed=True
     url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Error?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&error='+error
-    httpGet(url)
-
+    errorReportFailed=not httpGet(url)
 
 parser = ArgumentParser()
 parser.add_argument("--remotescheme", default="https")
@@ -95,6 +102,7 @@ parser.add_argument("--nodeid", type=int, default=99)
 
 config=parser.parse_args()
 
+errorReportFailed=0
 print "Config",config
 
 inputBus=CANopen(config.input)
