@@ -8,18 +8,14 @@ from argparse import *
 def parse16(array, offset):
     return (array[offset + 1] << 8) + array[offset]
 
-
 def parse32(array, offset):
     return (parse16(array, offset + 2) << 16) + parse16(array, offset)
-
 
 def pack16(data):
     return [data & 255, data >> 8]
 
-
 def pack32(data):
     return pack16(data & 0xffff) + pack16(data >> 16)
-
 
 def calcTsArray():
     now = datetime.datetime.now()
@@ -47,21 +43,27 @@ def httpGet(url):
         print 'URLError',error,'requesting',url
 
 def sendAlive(company,ship,controller,instance,day,ms):
-    url='http://128.39.165.228:8080/Alive?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&day='+str(day)+'&ms='+str(ms)
+    url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Alive?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&day='+str(day)+'&ms='+str(ms)
     httpGet(url)
 
 def sendError(company,ship,controller,instance,error):
-    url='http://128.39.165.228:8080/Error?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&error='+error
+    url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Error?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&error='+error
     httpGet(url)
 
 
 parser = ArgumentParser()
+parser.add_argument("--remotescheme")
+parser.add_argument("--remotehost")
+parser.add_argument("--remoteport")
+
 parser.add_argument("--input",help="Ingoing canbus to sensor")
 parser.add_argument("--output",help="Outgoing canbus to network")
+
 parser.add_argument("--company")
 parser.add_argument("--ship")
 parser.add_argument("--controller")
 parser.add_argument("--instance")
+
 parser.add_argument("--nodeid")
 
 config=parser.parse_args()
