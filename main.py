@@ -52,19 +52,19 @@ def sendError(company,ship,controller,instance,error):
 
 
 parser = ArgumentParser()
-parser.add_argument("--remotescheme")
-parser.add_argument("--remotehost")
-parser.add_argument("--remoteport")
+parser.add_argument("--remotescheme", default="http")
+parser.add_argument("--remotehost", default="128.39.165.228")
+parser.add_argument("--remoteport", default="8080")
 
-parser.add_argument("--input",help="Ingoing canbus to sensor")
-parser.add_argument("--output",help="Outgoing canbus to network")
+parser.add_argument("--input",help="Ingoing canbus to sensor", default="vcan0")
+parser.add_argument("--output",help="Outgoing canbus to network", default="vcan0")
 
-parser.add_argument("--company")
-parser.add_argument("--ship")
-parser.add_argument("--controller")
-parser.add_argument("--instance")
+parser.add_argument("--company", type=int, default=0)
+parser.add_argument("--ship", type=int, default=0)
+parser.add_argument("--controller", type=int, default=0)
+parser.add_argument("--instance", type=int, default=0)
 
-parser.add_argument("--nodeid")
+parser.add_argument("--nodeid", type=int, default=99)
 
 config=parser.parse_args()
 
