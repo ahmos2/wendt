@@ -1,12 +1,25 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from pycanopen import *
-import datetime,urllib2,sys
+from datetime import *
+from urllib2 import *
+from sys import *
 
-input = CANopen(sys.argv[1])
-output = CANopen(sys.argv[2])
+inp='can0'
+if(len(sys.argv)>1):
+    inp = sys.argv[1]
 
-instance=int(sys.argv[1][sys.argv[1].find('can')+len('can')])
+outp=inp
+if(len(sys.argv)>2):
+    outp = sys.argv[2]
+
+input = CANopen(inp)
+if(inp==outp):
+    output=input
+else: 
+    output = CANopen(outp)
+
+instance=int(inp[inp.find('can')+len('can')])
 canid=99+instance
 
 def parse16(array, offset):
