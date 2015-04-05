@@ -91,7 +91,7 @@ def sendAlive(company,ship,controller,instance,day,ms):
 
 def sendReset(company,ship,controller,instance):
     if not errorReportFailed:
-        url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Reset?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)
+        url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Alert?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)
         if not httpGet(url):
             sendError(company,ship,controller,instance,"Unable to reset")
     else:
@@ -100,7 +100,7 @@ def sendReset(company,ship,controller,instance):
 def sendError(company,ship,controller,instance,error):
     global errorReportFailed
     errorReportFailed=True
-    url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Error?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&error='+urllib.quote_plus(error)
+    url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Alert?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&error='+urllib.quote_plus(error)
     errorReportFailed=not httpGet(url)
 
 parser = ArgumentParser()
