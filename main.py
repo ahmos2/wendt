@@ -84,6 +84,14 @@ def sendAlive(company,ship,controller,instance,day,ms):
     else:
         sendError(company,ship,controller,instance,"One or more error-reports failed")
 
+def sendReset(company,ship,controller,instance):
+    if not errorReportFailed:
+        url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Reset?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)
+        if not httpGet(url):
+            sendError(company,ship,controller,instance,"Unable to reset")
+    else:
+        sendError(company,ship,controller,instance,"One or more error-reports failed")
+
 def sendError(company,ship,controller,instance,error):
     global errorReportFailed
     errorReportFailed=True
@@ -114,7 +122,7 @@ inputBus=CANopen(config.input)
 outputBus=CANopen(config.output)
 print "inputBus",inputBus,"outputBus",outputBus
 
-sendAlive(config.company,config.ship,config.controller,config.instance,0,0) # Bootup message
+sendReset(config.company,config.ship,config.controller,config.instance) # Bootup message
 while True:
     try:
         frame = inputBus.read_frame()
