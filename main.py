@@ -72,7 +72,7 @@ def httpGet(url,sign=True):
             signature=hmac.new(config.privatekey, signature, hashlib.sha512).hexdigest()
             url+='&signature='+signature
         print '<',url
-        resp=urlopen(url)
+        resp=urlopen(url,cafile="/home/pi/certificate/rootCA.pem")
         str=resp.read()
         print '> ',str
         resp.close()
