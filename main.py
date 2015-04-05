@@ -34,29 +34,31 @@ def ArrayToCuint8(array):
     return retVal
 
 def handleTimeStampMsg(pkg):
-    if pkg.data.length<>6:
+    if pkg.data_len<>6:
         sendError(config.company,config.ship,config.controller,config.instance,"Timestamp data length error")
         return
     dayL = list(pkg.data.data)
     daysSince84 = parse16(dayL, 4)
 
-    global prevDS84
-    if daysSince84 < prevDS84:
-        sendError(config.company,config.ship,config.controller,config.instance,"Timestamp days reduced #nodelorean")
-        return
-    if daysSince84 > prevDS84 + 1:
-        sendError(config.company,config.ship,config.controller,config.instance,"Timestamp day skipped #nodelorean")
-        return
-    dayL.reverse()
+    global prevDS84, prevMsm
     msSinceMidnight = parse32(pkg.data.data, 0)
+    print daysSince84,msSinceMidnight
 
-    global prevMsm
-    if msSinceMidnight < prevMsm and daysSince84 == prevDS84:
-        sendError(config.company,config.ship,config.controller,config.instance,"Timestamp millis reduced without day-change #nodelorean")
-        return
-    if msSinceMidnight == prevMsm and daysSince84 == prevDS84:
-        sendError(config.company,config.ship,config.controller,config.instance,"Timestamp duplicated frame")
-        return        
+    if prevDS84 <> 0:
+        if daysSince84 < prevDS84:
+            sendError(config.company,config.ship,config.controller,config.instance,"Timestamp days reduced #nodelorean")
+            return
+        if daysSince84 > prevDS84 + 1:
+            sendError(config.company,config.ship,config.controller,config.instance,"Timestamp day skipped #nodelorean")
+            return
+        global prevMsm
+        if msSinceMidnight < prevMsm and daysSince84 == prevDS84:
+            sendError(config.company,config.ship,config.controller,config.instance,"Timestamp millis reduced without day-change #nodelorean")
+            return
+        if msSinceMidnight == prevMsm and daysSince84 == prevDS84:
+            sendError(config.company,config.ship,config.controller,config.instance,"Timestamp duplicated frame")
+            return        
+
     prevDS84=daysSince84
     prevMsm=msSinceMidnight
     
@@ -105,7 +107,7 @@ parser.add_argument("--nodeid", type=int, default=99)
 
 config=parser.parse_args()
 
-errorReportFailed=0
+errorReportFailed,prevDS84,prevMsm=0,0,0
 print "Config",config
 
 inputBus=CANopen(config.input)
@@ -121,7 +123,7 @@ while True:
     if frame:
         if int(frame.id & 127) == 0 and frame.function_code == 2:
             handleTimeStampMsg(frame)
-        if int(frame.id & 127) == canid or (int(frame.id&127==0) and frame.function_code==0 and frame.data.data[1]==config.nodeid):
+        if int(frame.id & 127) == config.nodeid or (int(frame.id&127==0) and frame.function_code==0 and frame.data.data[1]==config.nodeid):
             print 'ALERT', frame, frame.id & 127, frame.function_code
             sendError(config.company,config.ship,config.controller,config.instance,'MJOW')
 			
