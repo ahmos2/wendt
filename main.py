@@ -69,7 +69,8 @@ def httpGet(url):
     try:
         print '<',url
         resp=urlopen(url)
-        print '> ',resp
+        str=resp.read()
+        print '> ',str
         resp.close()
         return True
     except URLError as error:
