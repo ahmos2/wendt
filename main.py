@@ -4,7 +4,7 @@ from pycanopen import *
 from datetime import *
 from urllib2 import *
 from argparse import *
-import urllib
+import urllib,hmac,hashlib
 
 def parse16(array, offset):
     return (array[offset + 1] << 8) + array[offset]
@@ -65,8 +65,12 @@ def handleTimeStampMsg(pkg):
 
     sendAlive(config.company,config.ship,config.controller,config.instance,daysSince84,msSinceMidnight)
 
-def httpGet(url):
+def httpGet(url,sign=True):
     try:
+        if sign:
+            global signature
+            signature=hmac.new(config.privatekey, signature, hashlib.sha512).hexdigest()
+            url+='&signature='+signature
         print '<',url
         resp=urlopen(url)
         str=resp.read()
@@ -114,9 +118,12 @@ parser.add_argument("--instance", type=int, default=0)
 
 parser.add_argument("--nodeid", type=int, default=99)
 
+parser.add_argument("--privatekey",default="Never gonna give you up")
+parser.add_argument("--signature",default="Never gonna let you down")
+
 config=parser.parse_args()
 
-errorReportFailed,prevDS84,prevMsm=0,0,0
+errorReportFailed,prevDS84,prevMsm,signature=0,0,0,config.signature
 print "Config",config
 
 inputBus=CANopen(config.input)
