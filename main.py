@@ -102,6 +102,8 @@ def sendError(company,ship,controller,instance,error):
     errorReportFailed=True
     url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Alert?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&error='+urllib.quote_plus(error)
     errorReportFailed=not httpGet(url)
+def checkNodeIdIsMine(frame,nodeid):
+    return int(frame.id & 127) == nodeid
 
 parser = ArgumentParser()
 parser.add_argument("--remotescheme", default="https")
@@ -123,7 +125,16 @@ parser.add_argument("--signature",default="Never gonna let you down")
 
 config=parser.parse_args()
 
-errorReportFailed,prevDS84,prevMsm,signature=0,0,0,config.signature
+errorReportFailed,prevDS84,prevMsm,signature,previousPkgSendTime,max,pos,lfsSeenCount,lastFrameSent=0,0,0,config.signature,0,0,0,0,0
+
+nmtECData=(c_uint8*8)()
+nmtECData[:]=[5,0,0,0,0,0,0,0]
+pdo1Data=(c_uint8*8)()
+pdo1Data[:]=[0xdb,0x11,0x64,1,0,0,0,0]
+personality=[CANopenFrame(function_code=0xe,data=CANopenPayload(data=nmtECData),data_len=1),\
+             CANopenFrame(function_code=0x2,data=CANopenPayload(data=pdo1Data),data_len=8),\
+             CANopenFrame(function_code=0x2,data=CANopenPayload(data=pdo1Data),data_len=8)]
+personalityLengths=[2,3]
 print "Config",config
 
 inputBus=CANopen(config.input)
@@ -132,6 +143,21 @@ print "inputBus",inputBus,"outputBus",outputBus
 
 sendReset(config.company,config.ship,config.controller,config.instance) # Bootup message
 while True:
+    if (max not in range(len(personality))) or not pos in range(max):
+        pos=0
+        max=random.choice(personalityLengths)
+    if previousPkgSendTime==0:
+        previousPkgSendTime=datetime.now()
+        print "ppst reset"
+    if (datetime.now()-previousPkgSendTime).total_seconds()>=1:
+        print previousPkgSendTime,datetime.now()
+        previousPkgSendTime=datetime.now()
+        lastFrameSent=personality[pos]
+        print (lastFrameSent.function_code<<7)+0x7b8000+config.nodeid
+        lastFrameSent.id=(lastFrameSent.function_code<<7)+0x7b8000+config.nodeid
+        print lastFrameSent
+        outputBus.send_frame(lastFrameSent)
+        lfsSeenCount=0
     try:
         frame = inputBus.read_frame()
     except Exception, inst:
@@ -139,7 +165,11 @@ while True:
     if frame:
         if int(frame.id & 127) == 0 and frame.function_code == 2:
             handleTimeStampMsg(frame)
-        if int(frame.id & 127) == config.nodeid or (int(frame.id&127==0) and frame.function_code==0 and frame.data.data[1]==config.nodeid):
-            print 'ALERT', frame, frame.id & 127, frame.function_code
+        if (frame == lastFrameSent and lfsSeenCount<>0) or \
+         (frame<>lastFrameSent and 
+          (checkNodeIdIsMine(frame,config.nodeid))):
+            print 'ALERT', frame
             sendError(config.company,config.ship,config.controller,config.instance,'MJOW')
 			
+
+
