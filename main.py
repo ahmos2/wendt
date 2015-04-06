@@ -153,8 +153,11 @@ while True:
         print previousPkgSendTime,datetime.now()
         previousPkgSendTime=datetime.now()
         lastFrameSent=personality[pos]
+
         print (lastFrameSent.function_code<<7)+0x7b8000+config.nodeid
+        lastFrameSent.type=1 # Extended
         lastFrameSent.id=(lastFrameSent.function_code<<7)+0x7b8000+config.nodeid
+
         print lastFrameSent
         outputBus.send_frame(lastFrameSent)
         lfsSeenCount=0
@@ -168,7 +171,7 @@ while True:
         if (frame == lastFrameSent and lfsSeenCount<>0) or \
          (frame<>lastFrameSent and 
           (checkNodeIdIsMine(frame,config.nodeid))):
-            print 'ALERT', frame
+            print 'ALERT', frame,frame==lastFrameSent,lfsSeenCount
             sendError(config.company,config.ship,config.controller,config.instance,'MJOW')
 			
 
