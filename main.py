@@ -131,8 +131,8 @@ nmtECData=(c_uint8*8)()
 nmtECData[:]=[5,0,0,0,0,0,0,0]
 pdo1Data=(c_uint8*8)()
 pdo1Data[:]=[0xdb,0x11,0x64,1,0,0,0,0]
-personality=[CANopenFrame(function_code=0xe,data=CANopenPayload(data=nmtECData),data_len=1),\
-             CANopenFrame(function_code=0x2,data=CANopenPayload(data=pdo1Data),data_len=8),\
+personality=[CANopenFrame(function_code=0xe,data=CANopenPayload(data=nmtECData),data_len=1),
+             CANopenFrame(function_code=0x2,data=CANopenPayload(data=pdo1Data),data_len=8),
              CANopenFrame(function_code=0x2,data=CANopenPayload(data=pdo1Data),data_len=8)]
 personalityLengths=[2,3]
 print "Config",config
@@ -150,17 +150,14 @@ while True:
         previousPkgSendTime=datetime.now()
         print "ppst reset"
     if (datetime.now()-previousPkgSendTime).total_seconds()>=1:
-        print previousPkgSendTime,datetime.now()
         previousPkgSendTime=datetime.now()
         lastFrameSent=personality[pos]
-
-        print (lastFrameSent.function_code<<7)+0x7b8000+config.nodeid
         lastFrameSent.type=1 # Extended
         lastFrameSent.id=(lastFrameSent.function_code<<7)+0x7b8000+config.nodeid
 
-        print lastFrameSent
         outputBus.send_frame(lastFrameSent)
         lfsSeenCount=0
+        pos+=1
     try:
         frame = inputBus.read_frame()
     except Exception, inst:
@@ -168,10 +165,12 @@ while True:
     if frame:
         if int(frame.id & 127) == 0 and frame.function_code == 2:
             handleTimeStampMsg(frame)
-        if (frame == lastFrameSent and lfsSeenCount<>0) or \
+        if frame == lastFrameSent:
+            lfsSeenCount+=1
+        if (frame == lastFrameSent and lfsSeenCount>1) or \
          (frame<>lastFrameSent and 
           (checkNodeIdIsMine(frame,config.nodeid))):
-            print 'ALERT', frame,frame==lastFrameSent,lfsSeenCount
+            print 'ALERT', frame,frame == lastFrameSent,checkNodeIdIsMine(frame,config.nodeid)
             sendError(config.company,config.ship,config.controller,config.instance,'MJOW')
 			
 
