@@ -104,7 +104,11 @@ def sendError(company,ship,controller,instance,error):
     errorReportFailed=not httpGet(url)
 def checkNodeIdIsMine(frame,nodeid):
     return int(frame.id & 127) == nodeid
-
+def checkNmtRegardsMe(frame,nodeid):
+    if frame.function_code<>0 or int(frame.id&127) <> 0:
+        return False
+    return int(frame.data.data[1])&127==nodeid&127
+    
 parser = ArgumentParser()
 parser.add_argument("--remotescheme", default="https")
 parser.add_argument("--remotehost", default="128.39.165.228")
@@ -169,7 +173,8 @@ while True:
             lfsSeenCount+=1
         if (frame == lastFrameSent and lfsSeenCount>1) or \
          (frame<>lastFrameSent and 
-          (checkNodeIdIsMine(frame,config.nodeid))):
+          (checkNodeIdIsMine(frame,config.nodeid) or
+           checkNmtRegardsMe(frame,config.nodeid))):
             print 'ALERT', frame,frame == lastFrameSent,checkNodeIdIsMine(frame,config.nodeid)
             sendError(config.company,config.ship,config.controller,config.instance,'MJOW')
 			
