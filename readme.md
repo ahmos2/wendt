@@ -21,7 +21,7 @@ Wendt is a honeypot for CANOPEN-based networks, with configurable reporting-syst
 --ship:
 --controller:
 --instance:
-cm:sh:cn:in, Name by which the instance will report itself as (default 0:0:0:0)
+cm\:sh\:cn\:in, Name by which the instance will report itself as (default 0:0:0:0)
 
 ### HMAC
 
