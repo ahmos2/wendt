@@ -21,6 +21,7 @@ Wendt is a honeypot for CANOPEN-based networks, with configurable reporting-syst
 --ship:
 --controller:
 --instance:
+
 Company:Ship:Controller:Instance, Name by which the instance will report itself as (default 0:0:0:0)
 
 ### HMAC
@@ -29,6 +30,7 @@ Uses HMAC-SHA512
 
 --privatekey: Key used to calculate the next HMAC-value
 --signature: Signature with which to initialize the HMAC
+
 #License
 
 Copyright (c) 2015, Martin Sundhaug
