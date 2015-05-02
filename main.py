@@ -91,7 +91,7 @@ def sendAlive(company, ship, controller, instance, day, ms):
 
 def sendReset(company, ship, controller, instance):
     if not errorReportFailed:
-        url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Alert?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)+'&error=reset'
+        url=config.remotescheme+'://'+config.remotehost+':'+config.remoteport+'/Reset?company='+str(company)+'&ship='+str(ship)+'&controller='+str(controller)+'&instance='+str(instance)
         if not httpGet(url):
             sendError(company, ship, controller, instance, "Unable to reset")
     else:
