@@ -57,8 +57,8 @@ def handleTimeStampMsg(pkg):
             return
         if msSinceMidnight == prevMsm and daysSince84 == prevDS84:
             sendError(config.company, config.ship, config.controller, config.instance, "Timestamp duplicated frame")
-            return        
-
+            return
+ 
     prevDS84=daysSince84
     prevMsm=msSinceMidnight
     
@@ -72,7 +72,9 @@ def httpGet(url, sign = True):
             signature=hmac.new(config.privatekey, signature, hashlib.sha512).hexdigest()
             url+='&signature='+signature
         print '<', url
-        resp=urlopen(url, cafile="../certificate/rootCA.pem")
+        req=Request(url)
+        req.add_header("Authorization", "Basic %s" % (base64.b64encode(config.username+":"+config.password)))
+        resp=urlopen(req, cafile="../certificate/rootCA.pem")
         str=resp.read()
         print '> ', str
         resp.close()
@@ -128,7 +130,8 @@ parser.add_argument("--nodeid", type=int, default=99)
 
 parser.add_argument("--privatekey",default="Never gonna give you up")
 parser.add_argument("--signature",default="Never gonna let you down")
-
+parser.add_argument("--username",default="remote")
+parser.add_argument("--password",default="remote")
 config=parser.parse_args()
 
 errorReportFailed, prevDS84, prevMsm, signature, previousPkgSendTime, max, pos, lfsSeenCount, lastFrameSent = 0, 0, 0, config.signature, 0, 0, 0, 0, 0
