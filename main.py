@@ -132,6 +132,8 @@ parser.add_argument("--privatekey",default="Never gonna give you up")
 parser.add_argument("--signature",default="Never gonna let you down")
 parser.add_argument("--username",default="remote")
 parser.add_argument("--password",default="remote")
+
+parser.add_argument("--verbose",action="store_true")
 config=parser.parse_args()
 
 errorReportFailed, prevDS84, prevMsm, signature, previousPkgSendTime, max, pos, lfsSeenCount, lastFrameSent = 0, 0, 0, config.signature, 0, 0, 0, 0, 0
@@ -166,10 +168,14 @@ while True:
         lastFrameSent.id=(lastFrameSent.function_code<<7)+0x7b8000+config.nodeid
 
         outputBus.send_frame(lastFrameSent)
+        if config.verbose:
+            print "Send",lastFrameSent
         lfsSeenCount=0
         pos+=1
     try:
         frame = inputBus.read_frame()
+        if config.verbose:
+            print "Recv",frame
     except Exception, inst:
         print ('Exception in read_frame:', inst.args)
         sys.exit(-1)
