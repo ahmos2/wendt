@@ -1,3 +1,7 @@
+from argumentHandler import *
+from urllib2 import *
+import urllib, hmac, hashlib
+errorReportFailed,signature=0,config.signature
 def httpGet(url, sign = True):
     try:
         if sign:

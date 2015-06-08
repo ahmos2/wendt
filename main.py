@@ -6,9 +6,6 @@ from reporting import *
 from personality import *
 from pycanopen import *
 from datetime import *
-from urllib2 import *
-from argparse import *
-import urllib, hmac, hashlib
 
 def calcTsArray():
     now = datetime.datetime.now()
@@ -64,7 +61,7 @@ def checkNmtRegardsMe(frame, nodeid):
         return False
     return int(frame.data.data[1])&127==nodeid&127
 
-errorReportFailed, prevDS84, prevMsm, signature, previousPkgSendTime, max, pos, lfsSeenCount, lastFrameSent = 0, 0, 0, config.signature, 0, 0, 0, 0, 0
+prevDS84, prevMsm, previousPkgSendTime, max, pos, lfsSeenCount, lastFrameSent = 0, 0, 0, 0, 0, 0, 0
 
 print "Config", config
 
