@@ -1,21 +1,21 @@
-#About Wendt
+# About Wendt
 Wendt is a honeypot for CANOPEN-based networks, with configurable reporting-system, personality and hmac-implementation
 
-##Arguments
-###Remote:
+## Arguments
+### Remote:
 --remotescheme: HTTP or HTTPS (default HTTPS), used to send pings and alerts.
 
 --remotehost: IP/domain-name, host to report to
 
 --remoteport: TCP-port to report to
 
-###Canbus
+### Canbus
 
 --input: Interface on which to detect and analyse activity (default vcan0)
 
 --output: Interface on which to fake personality (default vcan0)
 
-###Naming
+### Naming
 
 --company: 
 --ship:
@@ -31,7 +31,7 @@ Uses HMAC-SHA512
 --privatekey: Key used to calculate the next HMAC-value
 --signature: Signature with which to initialize the HMAC
 
-#License
+# License
 
 Copyright (c) 2015, Martin Sundhaug
 All rights reserved.
