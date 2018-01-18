@@ -1,6 +1,7 @@
 from argumentHandler import *
 from urllib2 import *
-import urllib, hmac, hashlib
+import urllib, hmac, hashlib, ssl
+
 errorReportFailed,signature=0,config.signature
 def httpGet(url, sign = True):
     try:
@@ -11,7 +12,8 @@ def httpGet(url, sign = True):
         print '<', url
         req=Request(url)
         req.add_header("Authorization", "Basic %s" % (base64.b64encode(config.username+":"+config.password)))
-        resp=urlopen(req, cafile="../certificate/rootCA.pem")
+#        resp=urlopen(req, cafile="../certificate/rootCA.pem")
+        resp=urlopen(req, context=ssl._create_unverified_context()) # FIXME: Re-enable certificate validation
         str=resp.read()
         print '> ', str
         resp.close()
